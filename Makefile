@@ -1,0 +1,27 @@
+LIB_ANTLR := lib/antlr.jar
+ANTLR_SCRIPT := Micro.g4
+EXTRA=bin *~ mine.* theirs.* out.out src/*~
+
+all: group compiler
+
+tiny:
+	g++ -fno-stack-protector -o tiny tiny4regs.C
+
+#makes the tiny exec from the file posted
+
+
+group:
+	@echo "jmeister"
+compiler:
+	rm -rf classes build $(EXTRA)
+	mkdir -p build
+	java -cp $(LIB_ANTLR) org.antlr.v4.Tool -o build $(ANTLR_SCRIPT)
+	mkdir -p classes
+	javac -cp $(LIB_ANTLR) -d classes build/*.java src/*.java
+clean:
+	rm -rf classes build $(EXTRA) 
+
+.PHONY: all group compiler clean
+
+
+

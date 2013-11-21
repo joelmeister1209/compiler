@@ -1,0 +1,21 @@
+PROGRAM myTest
+BEGIN
+	STRING start := "starting my test";
+	STRING space := " ";
+	STRING eol := "\n";
+
+	FUNCTION INT testFunc(INT tmp)
+	BEGIN
+		RETURN 1;
+	END
+	FUNCTION INT main()
+	BEGIN
+		INT a,b,c,d;
+		WRITE(start,eol);
+		a := 10;
+		b := testFunc(a);
+		c := b + a;
+		d := testFunc(c);
+		WRITE(a,eol,b,eol,c,eol,d,eol);
+	END
+END
