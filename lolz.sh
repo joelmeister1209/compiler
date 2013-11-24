@@ -1,9 +1,11 @@
 #! /bin/bash
-rm -f *~ src/*~
+rm -rf *~ mine.* theirs.* out.out bin src/*~ testcases/input/*~ testcases/output/*~ 
 
 make
+
 inputPath="testcases/input/fma.micro"
 outputPath="testcases/output/fma.out"
+
 if [ $1 -eq 1 ] > /dev/null 2>&1 ; then
 inputPath="testcases/input/factorial2.micro"
 outputPath="testcases/output/factorial2.out"
@@ -18,7 +20,6 @@ theirres="theirs.res"
 inputPath="testcases/input/myTest.micro"
 
 echo "-----------------------------------------------------" ;
-
 
 java -cp classes/:lib/antlr.jar Micro "$inputPath" > $ofile
 #./tinyR "$outputPath" > $theirres

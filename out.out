@@ -1,83 +1,68 @@
 ;STRING start "starting my test"
-;live: [ eol space start ]
 ;STRING space " "
-;live: [ eol space ]
 ;STRING eol "\n"
-;live: [ eol ]
 ;JSR main
 ;SYS HALT
 ;LABEL testFunc
 ;LINK 
 ;STOREI 1 $R
-;live: [ 1 ]
 ;RET 
 ;LABEL main
 ;LINK 
 ;WRITES start
-;live: [ eol 10 start ]
 ;WRITES eol
-;live: [ eol 10 ]
 ;STOREI 10 $L1
-;live: [ eol 10 ]
+;WRITEI $L1
+;WRITES eol
 ;PUSH
 ;PUSH $L1
-;live: [ eol $L1 ]
 ;JSR testFunc
 ;POP
 ;POP $T1
 ;STOREI $T1 $L2
-;live: [ eol $L1 $T1 ]
+;WRITEI $L2
+;WRITES eol
 ;STOREI $L1 $T2
-;live: [ eol $L1 $L2 ]
 ;ADDI $L2 $T2 $T3
-;live: [ eol $L1 $L2 $T2 ]
 ;STOREI $T3 $L3
-;live: [ eol $L1 $T3 ]
+;WRITEI $L3
+;WRITES eol
 ;STOREI $L1 $T4
-;live: [ eol $L3 $L1 ]
 ;SUBI $L3 $T4 $T5
-;live: [ eol $L3 $L1 $T4 ]
 ;STOREI $T5 $L2
-;live: [ eol $L3 $L1 $T5 ]
+;WRITEI $L2
+;WRITES eol
 ;PUSH
 ;PUSH $L3
-;live: [ eol $L3 $L2 $L1 ]
 ;JSR testFunc
 ;POP
 ;POP $T6
 ;STOREI $T6 $L4
-;live: [ eol $L3 $L2 $L1 $T6 ]
 ;WRITEI $L1
-;live: [ eol $L4 $L3 $L2 $L1 ]
 ;WRITES eol
-;live: [ eol $L4 $L3 $L2 ]
 ;WRITEI $L2
-;live: [ eol $L4 $L3 $L2 ]
 ;WRITES eol
-;live: [ eol $L4 $L3 ]
 ;WRITEI $L3
-;live: [ eol $L4 $L3 ]
 ;WRITES eol
-;live: [ eol $L4 ]
 ;WRITEI $L4
-;live: [ eol $L4 ]
 ;WRITES eol
-;live: [ eol ]
 str start "starting my test"
 str space " "
 str eol "\n"
 jsr main
 sys halt
 label testFunc
-link 2
+link 1
 move 1 $7
 unlnk
 ret
 label main
-link 12
+link 5
 sys writes start
 sys writes eol
 move 10 $-1
+sys writei $-1
+sys writes eol
 push
 push $-1
 push r0
@@ -90,21 +75,26 @@ pop r2
 pop r1
 pop r0
 pop
-pop $-5
-move $-5 r7
-move  r7 $-2
-move $-1 r7
-move  r7 $-6
-move $-2 $-7
-addi $-6 $-7
-move $-7 r7
-move  r7 $-3
-move $-1 r7
-move  r7 $-8
-move $-3 $-9
-subi $-8 $-9
-move $-9 r7
-move  r7 $-2
+move $-5 r0
+pop r0
+move r0 $-2
+sys writei $-2
+sys writes eol
+move $-6 r1
+move $-1 r1
+move $-7 r2
+addi r1 r2
+move r2 $-3
+sys writei $-3
+sys writes eol
+move $-8 r3
+move $-1 r3
+move $-5 r0
+addi r3 r0
+move $-5 r0
+move r0 $-2
+sys writei $-2
+sys writes eol
 push
 push $-3
 push r0
@@ -117,9 +107,10 @@ pop r2
 pop r1
 pop r0
 pop
-pop $-10
-move $-10 r7
-move  r7 $-4
+move $-5 r0
+pop r0
+move $-5 r0
+move r0 $-4
 sys writei $-1
 sys writes eol
 sys writei $-2

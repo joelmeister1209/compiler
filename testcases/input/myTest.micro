@@ -12,11 +12,15 @@ BEGIN
 	BEGIN
 		INT a,b,c,d;
 		WRITE(start,eol);
-		a := 10;
-		b := testFunc(a);
-		c := b + a;
-		b := c - a;
-		d := testFunc(c);
+		a := 10; --a=10
+		WRITE(a,eol);
+		b := testFunc(a);	--a=10,b=1
+		WRITE(b,eol);
+		c := b + a; 		--a=10,b=1,c=11
+		WRITE(c,eol);
+		b := c - a;		--a=10,b=1,c=11
+		WRITE(b,eol);
+		d := testFunc(c);	--a=10,b=1,c=11,d=1
 		WRITE(a,eol,b,eol,c,eol,d,eol);
 	END
 END

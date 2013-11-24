@@ -1,6 +1,5 @@
 LIB_ANTLR := lib/antlr.jar
 ANTLR_SCRIPT := Micro.g4
-EXTRA=bin *~ mine.* theirs.* out.out src/*~
 
 all: group compiler
 
@@ -13,13 +12,13 @@ tiny:
 group:
 	@echo "jmeister"
 compiler:
-	rm -rf classes build $(EXTRA)
+	rm -rf classes build
 	mkdir -p build
 	java -cp $(LIB_ANTLR) org.antlr.v4.Tool -o build $(ANTLR_SCRIPT)
 	mkdir -p classes
 	javac -cp $(LIB_ANTLR) -d classes build/*.java src/*.java
 clean:
-	rm -rf classes build $(EXTRA) 
+	rm -rf classes build
 
 .PHONY: all group compiler clean
 

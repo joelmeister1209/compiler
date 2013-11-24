@@ -3,7 +3,6 @@ import java.util.*;
 @SuppressWarnings("serial")
 public class InterRep extends LinkedList<Object>{
 	static public final List<String> compChars = new LinkedList<String>(Arrays.asList("<", ">", "=", "!=", "<=", ">="));
-	
 	public String scope, var_name ;
 	int ri, numParams, numLocVars, numLocTemps;
 	public List<IRNode> rlist = new LinkedList<IRNode>();//IR CODE
@@ -11,8 +10,40 @@ public class InterRep extends LinkedList<Object>{
 	public HashMap<Object, Object> jumpFromTo = new LinkedHashMap<Object, Object>();
 	public Stack<Object> branchStack = new Stack<Object>();
 
-	public void allocate(){
-		
+	public Register r0 = new Register("r0");
+	public Register r1 = new Register("r1");
+	public Register r2 = new Register("r2");
+	public Register r3 = new Register("r3");
+
+	public Register ensure(String opr){ 
+		if(r0.var.equals(opr)) return r0;
+		if(r1.var.equals(opr)) return r1;
+		if(r2.var.equals(opr)) return r2;
+		if(r3.var.equals(opr)) return r3;
+		Register reg = allocate(opr);
+		this.ilist.add("move "+reg.var+" "+reg);
+		return reg;
+	}
+	public void free(Register reg){ 
+		if(reg.isDirty){
+			this.ilist.add(";freeing "+reg+"->"+reg.var);
+			this.ilist.add("move "+reg.var+" "+reg);
+			reg.isFree = true;
+			reg.isDirty = false;
+		}
+		return;
+	}
+	public Register allocate(String opr){ 
+		if(r0.isFree) return r0.setVar(opr);
+		if(r1.isFree) return r1.setVar(opr);
+		if(r2.isFree) return r2.setVar(opr);
+		if(r3.isFree) return r3.setVar(opr);
+		return chooseReg();
+	}
+	public Register chooseReg(){
+		free(r0); //temporary
+		return r0;
+		//choose the register to use
 	}
 	
 	public void buildIR(){
@@ -43,6 +74,7 @@ public class InterRep extends LinkedList<Object>{
 		computeLiveness();
 		dumpIRlist(); //prints the IR list
 	}
+	
 	private List<String> liveList = new LinkedList<String>();
 	private void computeLiveness() {
 		for(int i = this.rlist.size()-1; i >= 0; i--){
@@ -56,17 +88,6 @@ public class InterRep extends LinkedList<Object>{
 				this.rlist.get(i).liveIn.add(s);
 			}
 		}
-		
-		/*
-		for(int i = this.rlist.size()-1; i >= 0; i--){
-			n = this.rlist.get(i);
-			for(String s : n.gen){
-				n.liveIn.add(s);
-			}
-			for(String s : n.kill){
-				n.liveOut.add(s);
-			}
-		}*/
 	}
 	private void dumpIRlist(){
 		String[] split;
@@ -79,17 +100,16 @@ public class InterRep extends LinkedList<Object>{
 			str = (n).toString();
 			split = (str).split(" ");
 			System.out.println(str);
-			n.printLiveIn();
+			//n.printLiveIn();
 			//n.printGenKill();
 			for (int i = 0; i < split.length; i++){
-				split[i] = split[i].replace("$T","r");
+				//split[i] = split[i].replace("$T","r");
 			}
 		}
 	}
-	private void buildInstruction(String[] split){
-		if(split == null) return;
-		char t = 'i'; //init to ints
-		for(int i = 0; i< split.length; i++){
+	
+	private String[] findStack(String[] split){
+		for(int i = 0; i < split.length; i++){
 			if(split[i].startsWith("$P")){
 				split[i] = "$"+(6+numParams-1-Integer.parseInt(split[i].substring(2)));//numParams
 			}
@@ -98,28 +118,41 @@ public class InterRep extends LinkedList<Object>{
 			}
 			else if(split[i].startsWith("$T")){
 				split[i] = "$-"+(this.numLocVars+Integer.parseInt(split[i].substring(2)));//numLocTmp
+				int tmp = Integer.parseInt(split[i].substring(2));
+				Register r = new Register();
+				r = ensure(split[i]);
+				split[i] = r.name;
 			}
 			else if(split[i].startsWith("$R")){
 				split[i] = "$"+(6-1+this.numParams);//numLocTmp
 			}
 		}
+		return split;
+	}
+	
+	private void buildInstruction(String[] split){
+		if(split == null) return;
+		char t = 'i'; //init to ints
+		Register r = new Register();
+		split = findStack(split);
 		if(split[0].startsWith(";PUSH")){
 			if(split.length > 1){
 				this.ilist.add("push "+split[1]);
 			} else {
 				this.ilist.add("push");
 			}
-			return;
 		}
-		if(split[0].startsWith(";POP")){
+		else if(split[0].startsWith(";POP")){
 			if(split.length > 1){
+				//r = ensure(split[1]);
+				//this.ilist.add("pop "+r);
+				//this.ilist.add("move "+r+" "+split[1]);
 				this.ilist.add("pop "+split[1]);
 			} else {
 				this.ilist.add("pop");
 			}
-			return;//got lazy
 		}
-		if (split[0].startsWith(";INT")){
+		else if (split[0].startsWith(";INT")){
 			if(this.scope.equals("GLOBAL"))
 				this.ilist.add("var "+split[1]);
 			else
@@ -137,35 +170,38 @@ public class InterRep extends LinkedList<Object>{
 		}else if (split[0].startsWith(";STRING")){
 			this.ilist.add("str "+split[1]+" "+split[2]);
 		}else if(split[0].startsWith(";STORE")){ 
-			if(split[1].startsWith("$")){
-				this.ilist.add("move "+split[1]+" r"+this.numLocTemps);
-				this.ilist.add("move "+" r"+this.numLocTemps+" "+split[2]);
-				return;
-			}
 			this.ilist.add("move "+split[1]+" "+split[2]);
 		}else if (split[0].startsWith(";ADD")){
 			t = Character.toLowerCase(split[0].charAt(4));
 			if(t=='f') t = 'r';
-			this.ilist.add("move "+split[1]+" "+split[3]);
+			//r=ensure(split[3]);
+			//this.ilist.add("add"+t+" "+split[2]+" "+r);
+			//this.ilist.add("move "+ r+ " " +split[3]);
 			this.ilist.add("add"+t+" "+split[2]+" "+split[3]);
-
+			
 		}else if (split[0].startsWith(";SUB")){
 			t = Character.toLowerCase(split[0].charAt(4));
 			if(t=='f') t = 'r';
-			this.ilist.add("move "+split[1]+" "+split[3]);
-			this.ilist.add("sub"+t+" "+split[2]+" "+split[3]);
+			//r=ensure(split[3]);
+			//this.ilist.add("sub"+t+" "+split[2]+" "+r);
+			//this.ilist.add("move "+ r+ " " +split[3]);
+			this.ilist.add("add"+t+" "+split[2]+" "+split[3]);
 
 		}else if (split[0].startsWith(";MULT")){
 			t = Character.toLowerCase(split[0].charAt(5));
 			if(t=='f') t = 'r';
-			this.ilist.add("move "+split[1]+" "+split[3]);
-			this.ilist.add("mul"+t+" "+split[2]+" "+split[3]);
+			//r=ensure(split[3]);
+			//this.ilist.add("mul"+t+" "+split[2]+" "+r);
+			//this.ilist.add("move "+ r+ " " +split[3]);
+			this.ilist.add("add"+t+" "+split[2]+" "+split[3]);
 
 		}else if (split[0].startsWith(";DIV")){
 			t = Character.toLowerCase(split[0].charAt(4));
 			if(t=='f') t = 'r';
-			this.ilist.add("move "+split[1]+" "+split[3]);
-			this.ilist.add("div"+t+" "+split[2]+" "+split[3]);
+			//r=ensure(split[3]);
+			//this.ilist.add("div"+t+" "+split[2]+" "+r);
+			//this.ilist.add("move "+ r+ " " +split[3]);
+			this.ilist.add("add"+t+" "+split[2]+" "+split[3]);
 
 		}else if (split[0].startsWith(";READ")){
 			t = Character.toLowerCase(split[0].charAt(5));

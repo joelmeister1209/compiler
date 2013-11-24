@@ -87,7 +87,7 @@ public class SymbolTable{
 		while(itr.hasNext()){
 			String obj = (String)itr.next();
 			if( obj.equals("link") )
-				obj += " "+(this.numLocVars+this.tmpstrcnt); //this.linkCount;
+				obj += " "+this.numLocVars;
 			System.out.println(obj);
 		}
 		if(this.scope.equals("GLOBAL")) {
