@@ -1,6 +1,10 @@
 PROGRAM myTest
 BEGIN
 	STRING start := "starting my test";
+	STRING strA := "a= ";
+	STRING strB := "b= ";
+	STRING strC := "c= ";
+	STRING strD := "d= ";
 	STRING space := " ";
 	STRING eol := "\n";
 
@@ -13,14 +17,16 @@ BEGIN
 		INT a,b,c,d;
 		WRITE(start,eol);
 		a := 10; --a=10
-		WRITE(a,eol);
-		b := testFunc(a);	--a=10,b=1
-		WRITE(b,eol);
-		c := b + a; 		--a=10,b=1,c=11
-		WRITE(c,eol);
-		b := c - a;		--a=10,b=1,c=11
-		WRITE(b,eol);
-		d := testFunc(c);	--a=10,b=1,c=11,d=1
-		WRITE(a,eol,b,eol,c,eol,d,eol);
+		--WRITE(strA,a,eol); --a=10;
+		b := testFunc(a);		--a=10,b=1
+		--WRITE(strB,b,eol); --b=1
+		c := b + a; 			--a=10,b=1,c=11
+		--WRITE(strC,c,eol); --c=11
+		b := c - a;			--a=10,b=1,c=11
+		--WRITE(strB,b,eol); --b=1
+		d := testFunc(c);		--a=10,b=1,c=11,d=1
+		--WRITE(strD,d,eol); --d=1
+
+		WRITE(strA,a,eol,strB,b,eol,strC,c,eol,strD,d,eol);
 	END
 END
