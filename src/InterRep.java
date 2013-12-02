@@ -23,19 +23,17 @@ public class InterRep extends LinkedList<Object>{
 	public Register r3 = new Register("r3");
 
 	public Register ensure(String opr){ 
-		if(r0.var.equals(opr)) return r0;
-		if(r1.var.equals(opr)) return r1;
-		if(r2.var.equals(opr)) return r2;
-		if(r3.var.equals(opr)) return r3;
+		if(r0.var.equals(opr) || r0.name.equals(opr)) return r0;
+		if(r1.var.equals(opr) || r1.name.equals(opr)) return r1;
+		if(r2.var.equals(opr) || r2.name.equals(opr)) return r2;
+		if(r3.var.equals(opr) || r3.name.equals(opr)) return r3;
 		Register reg = allocate(opr);
-		this.ilist.add(";allocated");
 		this.ilist.add("move "+reg.var+" "+reg);
 		return reg;
 	}
 	private int i=0;
 	public Register free(Register reg){ 
 		if(reg.isDirty){
-			this.ilist.add(";freeing "+reg+"->"+reg.var);
 			this.ilist.add("move "+reg+" "+reg.var);
 			reg.isFree = true;
 			reg.isDirty = false;
@@ -101,9 +99,6 @@ public class InterRep extends LinkedList<Object>{
 			System.out.println(str);
 			//n.printLiveIn();
 			//n.printGenKill();
-			for (int i = 0; i < split.length; i++){
-				//split[i] = split[i].replace("$T","r");
-			}
 		}
 	}
 	
@@ -116,14 +111,16 @@ public class InterRep extends LinkedList<Object>{
 				split[i] = "$-"+ split[i].substring(2);//numLocVars
 			}
 			else if(split[i].startsWith("$T")){
+/**/
 				split[i] = "$-"+(this.numLocVars+Integer.parseInt(split[i].substring(2)));//numLocVars
-				int tmp = Integer.parseInt(split[i].substring(2));
+				//int tmp = Integer.parseInt(split[i].substring(2));
+/*
 				Register r = new Register();
-				if(i==3){ //addop opr1 opr2 res, result is now dirty
-					r.isDirty = true;
-				}
 				r = ensure(split[i]);
+
 				split[i] = r.name;
+*/
+//				split[i] = split[i].replace("$T","r");
 			}
 			else if(split[i].startsWith("$R")){
 				split[i] = "$"+(6-1+this.numParams);//numParams
@@ -160,7 +157,8 @@ public class InterRep extends LinkedList<Object>{
 		}
 		else if(split[0].startsWith(";POP")){
 			if(split.length > 1){
-				this.ilist.add("pop "+split[1]);
+				r = ensure(split[1]);
+				this.ilist.add("pop "+r);
 			} else {
 				this.ilist.add("pop");
 			}
@@ -182,28 +180,25 @@ public class InterRep extends LinkedList<Object>{
 			this.ilist.add("ret");
 		}else if (split[0].startsWith(";STRING")){
 			this.ilist.add("str "+split[1]+" "+split[2]);
-		}else if(split[0].startsWith(";STORE")){ 
-			this.ilist.add("move "+split[1]+" "+split[2]);
-		}else if (split[0].startsWith(";ADD")){
+		}else if(split[0].startsWith(";STORE")){
+			if(split[1].startsWith("$") && split[2].startsWith("$")){
+				r = ensure(split[1]);
+				this.ilist.add("move "+r+" "+split[2]);
+			} else {
+				this.ilist.add("move "+split[1]+" "+split[2]);
+			}
+		}else if (split[0].startsWith(";ADD")
+			|| split[0].startsWith(";SUB")
+			|| split[0].startsWith(";MUL")
+			|| split[0].startsWith(";DIV") 
+			){	
 			t = Character.toLowerCase(split[0].charAt(4));
 			if(t=='f') t = 'r';
-			this.ilist.add("add"+t+" "+split[2]+" "+split[3]);
-			
-		}else if (split[0].startsWith(";SUB")){
-			t = Character.toLowerCase(split[0].charAt(4));
-			if(t=='f') t = 'r';
-			this.ilist.add("add"+t+" "+split[2]+" "+split[3]);
-
-		}else if (split[0].startsWith(";MULT")){
-			t = Character.toLowerCase(split[0].charAt(5));
-			if(t=='f') t = 'r';
-			this.ilist.add("add"+t+" "+split[2]+" "+split[3]);
-
-		}else if (split[0].startsWith(";DIV")){
-			t = Character.toLowerCase(split[0].charAt(4));
-			if(t=='f') t = 'r';
-			this.ilist.add("add"+t+" "+split[2]+" "+split[3]);
-
+			split[0]=split[0].replace(";ADD", "add").substring(0,3); split[0]=split[0].replace(";SUB", "sub").substring(0,3);	
+			split[0]=split[0].replace(";MUL", "mul").substring(0,3); split[0]=split[0].replace(";DIV", "div").substring(0,3);
+			r = ensure(split[1]); r.isDirty = true;
+			this.ilist.add(split[0]+t+" "+split[2]+" "+r);
+			this.ilist.add(";DEBUG "+split[0]+" "+split[1]+" "+split[2]+" "+split[3]);
 		}else if (split[0].startsWith(";READ")){
 			t = Character.toLowerCase(split[0].charAt(5));
 			if(t=='f') t = 'r';
@@ -212,11 +207,7 @@ public class InterRep extends LinkedList<Object>{
 		}else if (split[0].startsWith(";WRITE")){
 			t = Character.toLowerCase(split[0].charAt(6));
 			if(t=='f') t = 'r';
-			else if (t=='s') {
-				this.ilist.add("sys write"+t+" "+split[1]);
-			}
-			if(t=='r' || t =='i')
-				this.ilist.add("sys write"+t+" "+split[1]);
+			this.ilist.add("sys write"+t+" "+split[1]);
 		} else if(split[0].startsWith(";LABEL")){
 			this.ilist.add("label "+split[1]);
 		} else if(split[0].startsWith(";JUMP")){

@@ -192,7 +192,7 @@ addop returns [String s] :
 	'+' {$s="ADD";}
 	| '-' {$s="SUB";};
 mulop returns [String s] : 
-	'*' {$s="MULT";}
+	'*' {$s="MUL";}
 	| '/' {$s="DIV";};
 
 /* Complex Statements and Condition */ 

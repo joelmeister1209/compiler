@@ -44,9 +44,7 @@ public class SymbolTable{
 	}
 	public String newLoc(boolean inc){
 		if(inc) {
-			this.numLocVars++;
-			//IR.ri = this.tmpstrcnt+1; // i make more registers during cmp instructions
-			return "$L"+(this.numLocVars-1);
+			return "$L"+(this.numLocVars++);
 		}
 		else {
 			return "$L"+this.numLocVars;
@@ -54,10 +52,8 @@ public class SymbolTable{
 	}
 	public String newTemp(boolean inc){
 		if(inc) {
-			//IR.ri = this.tmpstrcnt; // i make more registers during cmp instructions
-			this.tmpstrcnt++;
-			IR.numLocTemps = this.tmpstrcnt;
-			return "$T"+(this.tmpstrcnt-1);
+			IR.numLocTemps = this.tmpstrcnt + 1;
+			return "$T"+(this.tmpstrcnt++);
 		}
 		else {
 			return "$T"+this.tmpstrcnt;
