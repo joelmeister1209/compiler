@@ -1,5 +1,6 @@
 PROGRAM myTest BEGIN
 	STRING start := "starting my test";
+	STRING debug := "DEBUG ";
 	STRING strA := "a= ";
 	STRING strB := "b= ";
 	STRING strC := "c= ";
@@ -15,9 +16,13 @@ PROGRAM myTest BEGIN
 		INT a,b,c,d;
 		WRITE(start,eol);
 		a := 7;			--7
+		WRITE(debug,strA,a,eol);
 		b := testFunc(a);	--5
+		WRITE(debug,strA,a,eol);
 		c := b + a; 		--12
+		WRITE(debug,strA,a,eol);
 		d := a + b + c ;	--24
+		WRITE(debug,strA,a,eol);
 
 		WRITE(strA,a,eol,strB,b,eol,strC,c,eol,strD,d,eol);
 	END

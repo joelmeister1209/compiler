@@ -32,15 +32,6 @@ public class InterRep extends LinkedList<Object>{
 		return reg;
 	}
 	private int i=0;
-	public Register free(Register reg){ 
-		if(reg.isDirty){
-			this.ilist.add("move "+reg+" "+reg.var);
-			reg.isFree = true;
-			reg.isDirty = false;
-		}
-		i = (i+1) % 4;//temporary
-		return reg;
-	}
 	public Register allocate(String opr){ 
 		if(r0.isFree) return r0.setVar(opr);
 		if(r1.isFree) return r1.setVar(opr);
@@ -49,7 +40,7 @@ public class InterRep extends LinkedList<Object>{
 		return chooseReg();
 	}
 	public Register chooseReg(){
-		//i is declared above free(Register)
+		//i is declared above allocate(..)
 		if(i == 0) return free(r0); 
 		if(i == 1) return free(r1); 
 		if(i == 2) return free(r2); 
@@ -57,6 +48,15 @@ public class InterRep extends LinkedList<Object>{
 		//choose the register to use
 	}
 	
+	public Register free(Register reg){ 
+		if(reg.isDirty){
+			this.ilist.add("move "+reg+" "+reg.var);
+			reg.isFree = true;
+			//reg.isDirty = false;
+		}
+		i = (i+1) % 4;//temporary
+		return reg;
+	}
 	public void buildIR(){
 		String[] split;
 		ListIterator<IRNode> itr = null;
@@ -194,11 +194,18 @@ public class InterRep extends LinkedList<Object>{
 			){	
 			t = Character.toLowerCase(split[0].charAt(4));
 			if(t=='f') t = 'r';
-			split[0]=split[0].replace(";ADD", "add").substring(0,3); split[0]=split[0].replace(";SUB", "sub").substring(0,3);	
-			split[0]=split[0].replace(";MUL", "mul").substring(0,3); split[0]=split[0].replace(";DIV", "div").substring(0,3);
-			r = ensure(split[1]); r.isDirty = true;
-			this.ilist.add(split[0]+t+" "+split[2]+" "+r);
+			split[0]=split[0].replace(";ADD", "add").substring(0,3); 
+			split[0]=split[0].replace(";SUB", "sub").substring(0,3);	
+			split[0]=split[0].replace(";MUL", "mul").substring(0,3); 
+			split[0]=split[0].replace(";DIV", "div").substring(0,3);
+
 			this.ilist.add(";DEBUG "+split[0]+" "+split[1]+" "+split[2]+" "+split[3]);
+			r = ensure(split[1]); 
+			r.isDirty = true;
+			this.ilist.add(split[0]+t+" "+split[2]+" "+r);
+			this.ilist.add("move " + r + " " + split[3]);
+			this.ilist.add(";DEBUGEND ");
+
 		}else if (split[0].startsWith(";READ")){
 			t = Character.toLowerCase(split[0].charAt(5));
 			if(t=='f') t = 'r';
