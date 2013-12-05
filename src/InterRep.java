@@ -58,7 +58,6 @@ public class InterRep extends LinkedList<Object>{
 	
 	public Register free(Register reg){ 
 		if(reg.isDirty){
-			System.out.println(";about to free "+reg+" to "+reg.getVar());
 			this.ilist.add("move "+reg+" "+reg.getVar()+" ;free");
 			reg.isFree = true;
 			//reg.isDirty = false;
@@ -144,6 +143,11 @@ public class InterRep extends LinkedList<Object>{
 			}
 		}
 	}
+	private boolean isRegister(String s){
+		if(s == "r0" || s == "r1" || s == "r2" || s == "r3")
+			return true;
+		return false;
+	}
 	private void buildInstruction(String[] split){
 		if(split == null) return;
 		char t = 'i'; //init to ints
@@ -190,7 +194,9 @@ public class InterRep extends LinkedList<Object>{
 		}else if (split[0].startsWith(";STRING")){
 			this.ilist.add("str "+split[1]+" "+split[2]);
 		}else if(split[0].startsWith(";STORE")){
-			if(split[1].startsWith("$") && split[2].startsWith("$")){
+			if(split[1].startsWith("$") && split[2].startsWith("$")
+				||  (! isRegister(split[1]) && !isRegister(split[1]) )		
+			){
 				r = ensure(split[2]);
 				this.ilist.add("move "+split[1]+" "+r);
 				this.ilist.add("move "+r+" "+split[2]);
@@ -210,15 +216,11 @@ public class InterRep extends LinkedList<Object>{
 			if(split[0].startsWith(";MU")) split[0] = "mul";
 			split[0]=split[0].replace(";DIV", "div").substring(0,3);
 
-			this.ilist.add(";DEBUG "+split[0]+" "+split[1]+" "+split[2]+" "+split[3]);
-
 			r = ensure(split[3]); r.isDirty = true;
 
 			this.ilist.add("move "+ split[2] + " " + r +" ; "+split[2]+" "+ r.getVar());
 			this.ilist.add(split[0]+t+" "+split[1]+" "+r+" ; "+split[1]+" "+ r.getVar());
 			this.ilist.add("move " + r + " " + split[3]+" ; "+r.getVar()+" "+ split[3]);
-
-			this.ilist.add(";DEBUGEND ");
 
 		}else if (split[0].startsWith(";READ")){
 			t = Character.toLowerCase(split[0].charAt(5));
@@ -279,6 +281,11 @@ public class InterRep extends LinkedList<Object>{
 					this.ilist.add("jeq " + split[3]); //=
 				}
 			}
+		}
+		else{
+			StringBuilder sb = new StringBuilder(100);
+			for(int k = 0; k < split.length ; k++ ) sb.append(split[k]+" ");
+			this.ilist.add(";missed " + sb.toString());
 		}
 	}
 	

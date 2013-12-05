@@ -2,6 +2,8 @@ PROGRAM step4
 BEGIN
 
 	INT a, b, i, p;
+	STRING eol := "\n";
+	STRING space := " ";
 
 	FUNCTION VOID main()
 	BEGIN
@@ -20,6 +22,7 @@ BEGIN
 			ENDIF
 
 			i := i+1;
+			WRITE(i,space,a,space,b,eol);
 
 		WHILE (i != 10);
 

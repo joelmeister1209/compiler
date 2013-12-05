@@ -14,6 +14,15 @@ outputPath="testcases/output/factorial2.out"
 elif [ $1 -eq 2 ] > /dev/null 2>&1 ; then
 inputPath="testcases/input/fibonacci2.micro"
 outputPath="testcases/output/fibonacci2.out"
+elif [ $1 -eq 3 ] > /dev/null 2>&1 ; then
+inputPath="testcases/input/step4_testcase.micro"
+outputPath="testcases/output/fibonacci2.out"
+elif [ $1 -eq 4 ] > /dev/null 2>&1 ; then
+inputPath="testcases/input/step4_testcase2.micro"
+outputPath="testcases/output/fibonacci2.out"
+elif [ $1 -eq 5 ] > /dev/null 2>&1 ; then
+inputPath="testcases/input/step4_testcase3.micro"
+outputPath="testcases/output/fibonacci2.out"
 fi
 
 ofile="out.out"

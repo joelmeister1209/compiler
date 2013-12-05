@@ -58,9 +58,16 @@ id_list[String instruction] returns [String s]: id
 		String t = (type=='f') ? "FLOAT": "INT";
 		if($instruction.equals("DECL")){			
 			currTable.addSymbol($id.s, t, null, currTable.scope);
-			currTable.setSymbolStackSpace($id.s, currTable.newLoc(true));
+			if(currTable.scope == "GLOBAL"){
+				if(t=="INT") currTable.IR.addInt($id.s);
+				else if(t=="FLOAT")  currTable.IR.addFloat($id.s);
+			}
+			else {
+				currTable.setSymbolStackSpace($id.s, currTable.newLoc(true));
+			}
 			currTable.incLinkCount();
 		} else if ($instruction.equals("READ")){
+			//System.out.println(";add read for "+$id_list.s+"->"+currTable.getSymbolStackSpace($id_list.s));
 			if(currTable.symbols.get($id_list.s) != null) {
 				type = currTable.symbols.get($id_list.s).type.charAt(0);
 				type = Character.toUpperCase(type);
@@ -68,6 +75,10 @@ id_list[String instruction] returns [String s]: id
 			}else if(symbolTable.symbols.get($id_list.s) != null
 				&& symbolTable.symbols.get($id_list.s).type.equals("STRING")) {
 				currTable.IR.addRead(currTable.getSymbolStackSpace($id_list.s), 'S');
+			} else{//global
+				type = symbolTable.symbols.get($id_list.s).type.charAt(0);
+				type = Character.toUpperCase(type);
+				currTable.IR.addRead(currTable.getSymbolStackSpace($id_list.s), type);
 			}
 		}else if ($instruction.equals("WRITE")){
 			if(currTable.symbols.get($id_list.s) != null) {
@@ -77,6 +88,10 @@ id_list[String instruction] returns [String s]: id
 			}else if(symbolTable.symbols.get($id_list.s) != null
 				&& symbolTable.symbols.get($id_list.s).type.equals("STRING")) {
 				currTable.IR.addWrite(currTable.getSymbolStackSpace($id_list.s), 'S');
+			} else{//global
+				type = symbolTable.symbols.get($id_list.s).type.charAt(0);
+				type = Character.toUpperCase(type);
+				currTable.IR.addWrite(currTable.getSymbolStackSpace($id_list.s), type);
 			}
 		} else{	System.out.println(";I hope this doesn't get called =/");}
 		

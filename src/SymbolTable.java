@@ -53,6 +53,7 @@ public class SymbolTable{
 	public String newTemp(boolean inc){
 		if(inc) {
 			IR.numLocTemps = this.tmpstrcnt + 1;
+			this.linkCount++;
 			return "$T"+(this.tmpstrcnt++);
 		}
 		else {
@@ -65,7 +66,7 @@ public class SymbolTable{
 	}
 	public void incLinkCount(){
 		this.linkCount++;
-		IR.numLocVars = this.linkCount;
+		IR.numLocVars = this.linkCount-this.tmpstrcnt;
 	}
 	public void buildIR(){
 		IR.buildIR();	
