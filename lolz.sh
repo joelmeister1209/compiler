@@ -6,6 +6,8 @@ make
 inputPath="testcases/input/fma.micro"
 outputPath="testcases/output/fma.out"
 
+#inputPath="testcases/input/myTest.micro"
+
 if [ $1 -eq 1 ] > /dev/null 2>&1 ; then
 inputPath="testcases/input/factorial2.micro"
 outputPath="testcases/output/factorial2.out"
@@ -17,7 +19,6 @@ fi
 ofile="out.out"
 resfile="mine.res"
 theirres="theirs.res"
-inputPath="testcases/input/myTest.micro"
 
 echo "-----------------------------------------------------" ;
 

@@ -16,14 +16,13 @@ PROGRAM myTest BEGIN
 		INT a,b,c,d;
 		WRITE(start,eol);
 		a := 7;			--7
-		WRITE(debug,strA,a,eol);
+		WRITE(strA,a,space,strB,b,space,strC,c,space,strD,d,eol);
 		b := testFunc(a);	--5
-		WRITE(debug,strA,a,eol);
+		WRITE(strA,a,space,strB,b,space,strC,c,space,strD,d,eol);
 		c := b + a; 		--12
-		WRITE(debug,strA,a,eol);
+		WRITE(strA,a,space,strB,b,space,strC,c,space,strD,d,eol);
 		d := a + b + c ;	--24
-		WRITE(debug,strA,a,eol);
 
-		WRITE(strA,a,eol,strB,b,eol,strC,c,eol,strD,d,eol);
+		WRITE(strA,a,space,strB,b,space,strC,c,space,strD,d,eol);
 	END
 END

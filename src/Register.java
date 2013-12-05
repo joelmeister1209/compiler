@@ -1,24 +1,27 @@
 
 public class Register {
-	String var;
+	private String var;
+	private String name;
 	boolean isFree;
 	boolean isDirty;
-	String name;
+	public String getVar(){ return this.var;}
 	public Register(String n){
 		this.name = n;
-		isFree = true; 
+		this.isFree = true; 
 		//isDirty = false; 
-		isDirty = true; //temp
+		//this.isFree = false; 
+		this.isDirty = true; //temp
 		this.var = ""; 
 	}
 	public Register() {
-		isFree = true; 
+		this.isFree = true; 
 		//isDirty = false;
-		isDirty = true; //temp
+		//this.isFree = false;
+		this.isDirty = true; //temp
 		this.var = "";
 	}
 	public Register setVar(String s) { 
-		var=s; 
+		this.var=s; 
 		this.isFree = false;
 		return this; 
 	}

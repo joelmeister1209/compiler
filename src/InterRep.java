@@ -23,20 +23,28 @@ public class InterRep extends LinkedList<Object>{
 	public Register r3 = new Register("r3");
 
 	public Register ensure(String opr){ 
-		if(r0.var.equals(opr) || r0.name.equals(opr)) return r0;
-		if(r1.var.equals(opr) || r1.name.equals(opr)) return r1;
-		if(r2.var.equals(opr) || r2.name.equals(opr)) return r2;
-		if(r3.var.equals(opr) || r3.name.equals(opr)) return r3;
+		if(r0.getVar().equals(opr) ) return r0;
+		if(r1.getVar().equals(opr) ) return r1;
+		if(r2.getVar().equals(opr) ) return r2;
+		if(r3.getVar().equals(opr) ) return r3;
 		Register reg = allocate(opr);
-		this.ilist.add("move "+reg.var+" "+reg);
+		this.ilist.add("move "+reg.getVar()+" "+reg+" ;ensured");
 		return reg;
 	}
 	private int i=0;
 	public Register allocate(String opr){ 
-		if(r0.isFree) return r0.setVar(opr);
-		if(r1.isFree) return r1.setVar(opr);
-		if(r2.isFree) return r2.setVar(opr);
-		if(r3.isFree) return r3.setVar(opr);
+		if(r0.isFree) {
+			return r0.setVar(opr);
+		}
+		if(r1.isFree){
+			return r1.setVar(opr);
+		}
+		if(r2.isFree){
+			return r2.setVar(opr);
+		}
+		if(r3.isFree){
+			return r3.setVar(opr);
+		}
 		return chooseReg();
 	}
 	public Register chooseReg(){
@@ -50,7 +58,8 @@ public class InterRep extends LinkedList<Object>{
 	
 	public Register free(Register reg){ 
 		if(reg.isDirty){
-			this.ilist.add("move "+reg+" "+reg.var);
+			System.out.println(";about to free "+reg+" to "+reg.getVar());
+			this.ilist.add("move "+reg+" "+reg.getVar()+" ;free");
 			reg.isFree = true;
 			//reg.isDirty = false;
 		}
@@ -111,16 +120,8 @@ public class InterRep extends LinkedList<Object>{
 				split[i] = "$-"+ split[i].substring(2);//numLocVars
 			}
 			else if(split[i].startsWith("$T")){
-/**/
 				split[i] = "$-"+(this.numLocVars+Integer.parseInt(split[i].substring(2)));//numLocVars
-				//int tmp = Integer.parseInt(split[i].substring(2));
-/*
-				Register r = new Register();
-				r = ensure(split[i]);
-
-				split[i] = r.name;
-*/
-//				split[i] = split[i].replace("$T","r");
+				//split[i] = ensure(split[i]).toString();
 			}
 			else if(split[i].startsWith("$R")){
 				split[i] = "$"+(6-1+this.numParams);//numParams
@@ -147,7 +148,13 @@ public class InterRep extends LinkedList<Object>{
 		if(split == null) return;
 		char t = 'i'; //init to ints
 		Register r = new Register();
+		Register rt1 = new Register() ; // second temp register
 		split = findStack(split);
+		StringBuilder testSB = new StringBuilder(100);
+		testSB.append(";processing: ");
+		for(int i = 0; i < split.length; i++){
+			testSB.append(split[i]+" ");
+		} //this.ilist.add(testSB.toString());
 		if(split[0].startsWith(";PUSH")){
 			if(split.length > 1){
 				this.ilist.add("push "+split[1]);
@@ -159,6 +166,8 @@ public class InterRep extends LinkedList<Object>{
 			if(split.length > 1){
 				r = ensure(split[1]);
 				this.ilist.add("pop "+r);
+				//free(r);
+				this.ilist.add("move "+r+ " " + r.getVar());
 			} else {
 				this.ilist.add("pop");
 			}
@@ -182,7 +191,8 @@ public class InterRep extends LinkedList<Object>{
 			this.ilist.add("str "+split[1]+" "+split[2]);
 		}else if(split[0].startsWith(";STORE")){
 			if(split[1].startsWith("$") && split[2].startsWith("$")){
-				r = ensure(split[1]);
+				r = ensure(split[2]);
+				this.ilist.add("move "+split[1]+" "+r);
 				this.ilist.add("move "+r+" "+split[2]);
 			} else {
 				this.ilist.add("move "+split[1]+" "+split[2]);
@@ -197,13 +207,17 @@ public class InterRep extends LinkedList<Object>{
 			split[0]=split[0].replace(";ADD", "add").substring(0,3); 
 			split[0]=split[0].replace(";SUB", "sub").substring(0,3);	
 			split[0]=split[0].replace(";MUL", "mul").substring(0,3); 
+			if(split[0].startsWith(";MU")) split[0] = "mul";
 			split[0]=split[0].replace(";DIV", "div").substring(0,3);
 
 			this.ilist.add(";DEBUG "+split[0]+" "+split[1]+" "+split[2]+" "+split[3]);
-			r = ensure(split[1]); 
-			r.isDirty = true;
-			this.ilist.add(split[0]+t+" "+split[2]+" "+r);
-			this.ilist.add("move " + r + " " + split[3]);
+
+			r = ensure(split[3]); r.isDirty = true;
+
+			this.ilist.add("move "+ split[2] + " " + r +" ; "+split[2]+" "+ r.getVar());
+			this.ilist.add(split[0]+t+" "+split[1]+" "+r+" ; "+split[1]+" "+ r.getVar());
+			this.ilist.add("move " + r + " " + split[3]+" ; "+r.getVar()+" "+ split[3]);
+
 			this.ilist.add(";DEBUGEND ");
 
 		}else if (split[0].startsWith(";READ")){
