@@ -160,8 +160,9 @@ debug("EXPR CALL : "+currTable.getSymbolStackSpace(currTable.IR.peek()));
 expr_tail returns [String s]: 
 	addop factor { 
 		if(currTable.symbols.containsKey(currTable.IR.peek())) type = currTable.getTypeOf(currTable.IR.peek());
-		currTable.IR.addStore(currTable.getSymbolStackSpace(currTable.IR.pop()), currTable.newTemp(false), type);
-		currTable.IR.addOp($addop.s, currTable.newTemp(true), currTable.getSymbolStackSpace(currTable.IR.pop()), currTable.newTemp(false),type);
+		//currTable.IR.addStore(currTable.getSymbolStackSpace(currTable.IR.pop()), currTable.newTemp(false), type);
+		//currTable.IR.addOp($addop.s, currTable.newTemp(true), currTable.getSymbolStackSpace(currTable.IR.pop()), currTable.newTemp(false),type);
+		currTable.IR.addOp($addop.s, currTable.getSymbolStackSpace(currTable.IR.pop()), currTable.getSymbolStackSpace(currTable.IR.pop()), currTable.newTemp(false),type);
 		currTable.IR.push(currTable.newTemp(true));
 	}expr_tail |  ;
 factor returns [String s]: 
@@ -169,8 +170,9 @@ factor returns [String s]:
 factor_tail returns [String s]:
 	mulop postfix_expr { 
 		if(currTable.symbols.containsKey(currTable.IR.peek())) type = currTable.getTypeOf(currTable.IR.peek());
-		currTable.IR.addStore(currTable.getSymbolStackSpace(currTable.IR.pop()), currTable.newTemp(false), type);
-		currTable.IR.addOp($mulop.s, currTable.newTemp(true), currTable.getSymbolStackSpace(currTable.IR.pop()), currTable.newTemp(false),type);
+		//currTable.IR.addStore(currTable.getSymbolStackSpace(currTable.IR.pop()), currTable.newTemp(false), type);
+		//currTable.IR.addOp($mulop.s, currTable.newTemp(true), currTable.getSymbolStackSpace(currTable.IR.pop()), currTable.newTemp(false),type);
+		currTable.IR.addOp($mulop.s, currTable.getSymbolStackSpace(currTable.IR.pop()), currTable.getSymbolStackSpace(currTable.IR.pop()), currTable.newTemp(false),type);
 		currTable.IR.push(currTable.newTemp(true));
 	}factor_tail | ;
 postfix_expr returns [String s]: 

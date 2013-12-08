@@ -1,48 +1,59 @@
 #! /bin/bash
 rm -rf *~ mine.* theirs.* out.out bin src/*~ testcases/input/*~ testcases/output/*~ 
 
-make
-
-inputPath="testcases/input/myTest.micro"
-if [ $1 -eq 0 ] > /dev/null 2>&1 ; then
-inputPath="smallTest.micro"
-elif [ $1 -eq 1 ] > /dev/null 2>&1 ; then
-inputPath="testcases/input/step4_testcase.micro"
-outputPath="testcases/output/step4_testcase.out"
-elif [ $1 -eq 2 ] > /dev/null 2>&1 ; then
-inputPath="testcases/input/step4_testcase2.micro"
-outputPath="testcases/output/step4_testcase2.out"
-elif [ $1 -eq 3 ] > /dev/null 2>&1 ; then
-inputPath="testcases/input/step4_testcase3.micro"
-outputPath="testcases/output/step4_testcase3.out"
-elif [ $1 -eq 4 ] > /dev/null 2>&1 ; then
-inputPath="testcases/input/factorial2.micro"
-outputPath="testcases/output/factorial2.out"
-elif [ $1 -eq 5 ] > /dev/null 2>&1 ; then
-inputPath="testcases/input/fibonacci2.micro"
-elif [ $1 -eq 6 ] > /dev/null 2>&1 ; then
-inputPath="testcases/input/fma.micro"
-
-fi
-
-ofile="out.out"
-resfile="mine.res"
-theirres="theirs.res"
-
-echo "-----------------------------------------------------" ;
-
-java -cp classes/:lib/antlr.jar Micro "$inputPath" > $ofile
-java -jar compiler.jar "$inputPath" > "theirout"
-#./tinyR "$outputPath" > $theirres
-if [ $2 -eq 1 ] > /dev/null 2>&1 ; then
+if [ $1 = "use" ] > /dev/null 2>&1 ; then
 	echo "using allocation"
-	./tiny $ofile #  > $resfile
-else
+	x='public boolean useAllocation = false;'
+	y='public boolean useAllocation = true;'
+	#sed -i -e 's/$x/$y/g' src/InterRep.java
+	replace "$x" "$y" -- src/InterRep.java
+else 
 	echo "not using allocation"
-	./tinyR $ofile #  > $resfile
+	x='public boolean useAllocation = true;'
+	y='public boolean useAllocation = false;'
+	#sed -i -e 's/$x/$y/g' src/InterRep.java
+	replace "$x" "$y" -- src/InterRep.java
 fi
-echo
-./tinyR $outputPath
-#diff -y -b -B $theirres $resfile
+make
+ofile=myout
+inpath="testcases/input"
+opath="testcases/output"
+if [ -f "$inpath/$2.micro" ] > /dev/null 2>&1 ; then
+	echo "processing $2"
+	java -cp classes/:lib/antlr.jar Micro "$inpath/$2.micro" > $ofile
+	java -jar compiler.jar "$inpath/$2.micro" > "theirout"
+	if [ $1 = "use" ] > /dev/null 2>&1 ; then
+		echo "using allocation"
+		./tiny $ofile   > "myres"
+		./tiny "theirout" > "theirres"
+	else
+		echo "not using allocation"
+		./tinyR $ofile   > "myres"
+		./tinyR "$opath/$2.out" > "theirres"
+	fi
+	echo "theirs <-> mine"
+	diff -b -B -y "theirres" "myres" 
+	exit 0
+else
+	echo "$2.micro not found...performing full test"
+fi
+for i in testcases/input/* ; do
+	if test -f "$i" ; then
+		echo "processing $i"
+		java -cp classes/:lib/antlr.jar Micro "$i" > $ofile
+		java -jar compiler.jar "$i" > "theirout"
+		if [ $1 = "use" ] > /dev/null 2>&1 ; then
+			echo "using allocation"
+			./tiny $ofile #  > $resfile
+		else
+			echo "not using allocation"
+			./tinyR $ofile #  > $resfile
+		fi
+		echo "<<<<<<<<<<<<<<<<<<<<<<<<<"
+		./tiny "theirout"
+		echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
+	fi
+done
+
 exit 0
 

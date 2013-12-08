@@ -238,10 +238,11 @@ public class InterRep extends LinkedList<Object>{
 			if(t=='f') t = 'r';
 			split[0]=split[0].replace(";ADD", "add").substring(0,3); 
 			split[0]=split[0].replace(";SUB", "sub").substring(0,3);
-			if(split[0].startsWith(";SU")) split[0] = "sub";	
 			split[0]=split[0].replace(";MUL", "mul").substring(0,3); 
-			if(split[0].startsWith(";MU")) split[0] = "mul";
 			split[0]=split[0].replace(";DIV", "div").substring(0,3);
+			if(split[0].startsWith(";SU")) split[0] = "sub";	//something weird happened
+			if(split[0].startsWith(";MU")) split[0] = "mul";
+			if(split[0].startsWith(";DI")) split[0] = "div";
 			if(useAllocation){
 				this.ilist.add("move "+split[1]+" "+ split[3]);
 				this.ilist.add(split[0]+t+" "+split[2]+" "+ split[3]);

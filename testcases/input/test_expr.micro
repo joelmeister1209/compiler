@@ -1,6 +1,6 @@
 PROGRAM expr
 BEGIN
-
+	STRING space := "\n";
 	INT a,b,c,d;
 	FLOAT x,y,z,t;
 
@@ -11,42 +11,38 @@ BEGIN
 		c := 10;
 		d := 20;
 
-		WRITE (a);
-		WRITE (b);
-		WRITE (c);
-		WRITE(d);
 		a := a + b;
-		WRITE (a);
+		WRITE (a,space);
 		b := a * c;
-		WRITE (b);
+		WRITE (b,space);
 		c := 0 - a + b;
-		WRITE (c);
+		WRITE (c,space);
 		d := 0 - d;
-		WRITE (d);
+		WRITE (d,space);
 		a := (a+b)*(d+c)-(a+b+c+d)/a;
-		WRITE (a);
+		WRITE (a,space);
 		
 		a := a + 10;
-		WRITE (a);
+		WRITE (a,space);
 		b := b + a + 10;
-		WRITE (b);
+		WRITE (b,space);
 		c := 0 - 10;
-		WRITE (c);
+		WRITE (c,space);
 		x := 1.0;
 		y := 2.0;
 		z := 3.14159;
-		WRITE (x);
-		WRITE (z);
-		WRITE (y);
+		WRITE (x,space);
+		WRITE (z,space);
+		WRITE (y,space);
 		x := z/2.0;
 		y := z/y;
-		WRITE (x);
-		WRITE (y);
+		WRITE (x,space);
+		WRITE (y,space);
 		t := (x+y+z)/z;
-		WRITE (t);
+		WRITE (t,space);
 		t := t*t;
-		WRITE (t);
+		WRITE (t,space);
 		t := (t+z+t+t/2.0+z/4.0+z/5.0+z/6.0+z/7.0);
-		WRITE (t);
+		WRITE (t,space);
 	END	
 END
