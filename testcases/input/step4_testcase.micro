@@ -2,6 +2,9 @@ PROGRAM step4
 BEGIN
 
 	INT a, b, i, p;
+	STRING iStr := "i=";
+	STRING aStr := "a=";
+	STRING bStr := "b=";
 	STRING eol := "\n";
 	STRING space := " ";
 
@@ -16,13 +19,17 @@ BEGIN
 			READ (p);
 			
 			IF (p > 10) 
+				WRITE(aStr,a,space);
 				a := a + 1;
+				WRITE(aStr,a,eol);
 			ELSIF (TRUE)
-      			b := b + 1;
+				WRITE(bStr,b,space);
+      				b := b + 1;
+				WRITE(bStr,b,eol);
 			ENDIF
 
 			i := i+1;
-			WRITE(i,space,a,space,b,eol);
+			WRITE(iStr,i,space,aStr,a,space,bStr,b,eol);
 
 		WHILE (i != 10);
 
