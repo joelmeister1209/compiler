@@ -2,7 +2,7 @@ import java.util.*;
 
 @SuppressWarnings("serial")
 public class InterRep extends LinkedList<Object>{
-	boolean useAllocation = false; //true to use register allocation (./tiny)
+	public boolean useAllocation = true; //true to use register allocation (./tiny)
 
 	public String scope, var_name ;
 	int ri, numParams, numLocVars, numLocTemps;
@@ -30,7 +30,7 @@ public class InterRep extends LinkedList<Object>{
 		if(r2.getVar().equals(opr)) return r2;
 		if(r3.getVar().equals(opr)) return r3;
 		Register r = allocate(opr);
-		this.ilist.add("move "+opr+" "+r);
+		this.ilist.add("move "+opr+" "+r +" ;ensured "+opr+" is in "+r);
 		return r;
 	}
 	private int i=0;
@@ -74,8 +74,9 @@ public class InterRep extends LinkedList<Object>{
 		  return true;  
 	}
 	public Register free(Register reg){ 
-		if(!isNumeric(reg.getVar()))
-			this.ilist.add("move "+reg+" "+reg.getVar()+" ;free");//temporary
+		if(!isNumeric(reg.getVar())){ 
+			this.ilist.add("move "+reg+" "+reg.getVar()+" ;free "+reg.getVar()+" lost " +reg);//temporary
+		}
 		i = (i+1) % 4;//temporary
 		return reg;
 	}
@@ -272,11 +273,11 @@ public class InterRep extends LinkedList<Object>{
 			this.ilist.add("pop r1");
 			this.ilist.add("pop r0");
 		} else if(compChars.contains(split[0].substring(2))){
-			this.ilist.add("move "+split[2]+" r"+ri);
+			r = ensure (split[2]);
 			if(split[0].startsWith(";I"))
-				this.ilist.add("cmpi "+split[1]+" r"+ri++);
+				this.ilist.add("cmpi "+split[1]+" "+r);
 			else
-				this.ilist.add("cmpr "+split[1]+" r"+ri++);
+				this.ilist.add("cmpi "+split[1]+" "+r);				
 			split[0] = ";"+split[0].substring(2);
 			if(split.length == 5){
 				if(split[0].equals( ";<") ){

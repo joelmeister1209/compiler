@@ -66,7 +66,7 @@ public class SymbolTable{
 	}
 	public void incLinkCount(){
 		this.linkCount++;
-		IR.numLocVars = this.linkCount-this.tmpstrcnt;
+		IR.numLocVars = this.linkCount;//-this.tmpstrcnt
 	}
 	public void buildIR(){
 		IR.buildIR();	
@@ -83,8 +83,12 @@ public class SymbolTable{
 		itr = this.IR.ilist.listIterator();
 		while(itr.hasNext()){
 			String obj = (String)itr.next();
-			if( obj.equals("link") )
-				obj += " "+this.numLocVars;
+			if( obj.equals("link") ){
+				if(IR.useAllocation) 
+					obj += " "+(this.numLocVars+this.tmpstrcnt);
+				else
+					obj += " "+this.numLocVars;
+			}
 			System.out.println(obj);
 		}
 		if(this.scope.equals("GLOBAL")) {

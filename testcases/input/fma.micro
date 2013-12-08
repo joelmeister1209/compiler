@@ -36,6 +36,7 @@ BEGIN
 		WRITE(third);
 		READ(c);
 		multiplyresult := multiply(a,b);
+		WRITE(a,star,b,equal,multiplyresult,eol);
 		addresult := add(multiplyresult,c);
 		WRITE(a,star,b,plus,c,equal,addresult,eol);
 		RETURN 0;
