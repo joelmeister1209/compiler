@@ -206,24 +206,6 @@ public class InterRep extends LinkedList<Object>{
 			} else {
 				this.ilist.add("pop");
 			}
-		}
-		else if (split[0].startsWith(";INT")){
-			if(this.scope.equals("GLOBAL"))
-				this.ilist.add("var "+split[1]);
-			else
-				this.ilist.add(";add stack space for: INT "+split[1]);
-		}else if (split[0].startsWith(";FLOAT")){
-			if(this.scope.equals("GLOBAL"))
-				this.ilist.add("var "+split[1]);
-			else
-				this.ilist.add(";add stack space for: FLOAT "+split[1]);
-		}else if (split[0].startsWith(";LINK")){
-			this.ilist.add("link");
-		}else if (split[0].startsWith(";RET")){
-			this.ilist.add("unlnk");
-			this.ilist.add("ret");
-		}else if (split[0].startsWith(";STRING")){
-			this.ilist.add("str "+split[1]+" "+split[2]);
 		}else if(split[0].startsWith(";STORE")){
 			if(split[1].startsWith("$") && split[2].startsWith("$")
 				||  (! isRegister(split[1]) && !isRegister(split[1]) )		
@@ -253,45 +235,14 @@ public class InterRep extends LinkedList<Object>{
 			if(split[0].startsWith(";MU")) split[0] = "mul";
 			if(split[0].startsWith(";DI")) split[0] = "div";
 			if(useAllocation){
-
-				r = ensure(split[1],false);
-				Register r2 = ensure(split[2],false);
-				Register r3 = ensure(split[3],true);
-				
-				this.ilist.add("move "+r+" "+ r3);
-				this.ilist.add(split[0]+t+" "+r2+" "+ r3);
-
-/*
-				this.ilist.add("move "+ split[1] + " " + ensure(split[3],false) );
-				this.ilist.add(split[0]+t+" "+split[2]+" "+ensure(split[3],true) );
-*/
+				r = ensure(split[3],true);
+				this.ilist.add("move "+ split[1]+" "+r);
+				this.ilist.add(split[0]+t+" "+split[2]+" "+r );
+				this.ilist.add("move "+r+" "+r.getVar());
 			}else {
 				this.ilist.add("move "+ split[1] + " " + split[3] );
 				this.ilist.add(split[0]+t+" "+split[2]+" "+split[3]);
 			}
-		}else if (split[0].startsWith(";READ")){
-			t = Character.toLowerCase(split[0].charAt(5));
-			if(t=='f') t = 'r';
-			this.ilist.add("sys read"+t+" "+split[1]);
-
-		}else if (split[0].startsWith(";WRITE")){
-			t = Character.toLowerCase(split[0].charAt(6));
-			if(t=='f') t = 'r';
-			this.ilist.add("sys write"+t+" "+split[1]);
-		} else if(split[0].startsWith(";LABEL")){
-			this.ilist.add("label "+split[1]);
-		} else if(split[0].startsWith(";JUMP")){
-			this.ilist.add("jmp "+split[1]);
-		} else if(split[0].startsWith(";JSR")){
-			this.ilist.add("push r0");
-			this.ilist.add("push r1");
-			this.ilist.add("push r2");
-			this.ilist.add("push r3");
-			this.ilist.add("jsr "+split[1]);
-			this.ilist.add("pop r3");
-			this.ilist.add("pop r2");
-			this.ilist.add("pop r1");
-			this.ilist.add("pop r0");
 		} else if(compChars.contains(split[0].substring(2))){
 			r = ensure (split[2],false);
 			if(split[0].startsWith(";I"))
@@ -328,8 +279,47 @@ public class InterRep extends LinkedList<Object>{
 					this.ilist.add("jeq " + split[3]); //=
 				}
 			}
-		}
-		else{
+		}else if (split[0].startsWith(";INT")){
+			if(this.scope.equals("GLOBAL"))
+				this.ilist.add("var "+split[1]);
+			else
+				this.ilist.add(";add stack space for: INT "+split[1]);
+		}else if (split[0].startsWith(";FLOAT")){
+			if(this.scope.equals("GLOBAL"))
+				this.ilist.add("var "+split[1]);
+			else
+				this.ilist.add(";add stack space for: FLOAT "+split[1]);
+		}else if (split[0].startsWith(";READ")){
+			t = Character.toLowerCase(split[0].charAt(5));
+			if(t=='f') t = 'r';
+			this.ilist.add("sys read"+t+" "+split[1]);
+
+		}else if (split[0].startsWith(";WRITE")){
+			t = Character.toLowerCase(split[0].charAt(6));
+			if(t=='f') t = 'r';
+			this.ilist.add("sys write"+t+" "+split[1]);
+		} else if(split[0].startsWith(";LABEL")){
+			this.ilist.add("label "+split[1]);
+		} else if(split[0].startsWith(";JUMP")){
+			this.ilist.add("jmp "+split[1]);
+		} else if(split[0].startsWith(";JSR")){
+			this.ilist.add("push r0");
+			this.ilist.add("push r1");
+			this.ilist.add("push r2");
+			this.ilist.add("push r3");
+			this.ilist.add("jsr "+split[1]);
+			this.ilist.add("pop r3");
+			this.ilist.add("pop r2");
+			this.ilist.add("pop r1");
+			this.ilist.add("pop r0");
+		}else if (split[0].startsWith(";LINK")){
+			this.ilist.add("link");
+		}else if (split[0].startsWith(";RET")){
+			this.ilist.add("unlnk");
+			this.ilist.add("ret");
+		}else if (split[0].startsWith(";STRING")){
+			this.ilist.add("str "+split[1]+" "+split[2]);
+		}else{
 			StringBuilder sb = new StringBuilder(100);
 			for(int k = 0; k < split.length ; k++ ) sb.append(split[k]+" ");
 			this.ilist.add(";missed " + sb.toString());
