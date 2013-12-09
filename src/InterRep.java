@@ -2,6 +2,12 @@ import java.util.*;
 
 @SuppressWarnings("serial")
 public class InterRep extends LinkedList<Object>{
+
+	public static boolean isNumeric(String str){
+		  try  {  double d = Double.parseDouble(str); }  
+		catch(NumberFormatException nfe) { return false; }  
+		  return true;  
+	}
 	public boolean useAllocation = true; //true to use register allocation (./tiny)
 
 	public String scope, var_name ;
@@ -17,69 +23,67 @@ public class InterRep extends LinkedList<Object>{
 		new LinkedHashMap<Object, Object>();
 	public Stack<Object> branchStack = 
 		new Stack<Object>();
+	Register r0,r1,r2,r3;
+	List<Register> regs = new ArrayList<Register>();
+	public InterRep(){
+		super();
+		r0 = new Register("r0");
+		r1 = new Register("r1");
+		r2 = new Register("r2");
+		r3 = new Register("r3");
+		regs.add(r0);
+		regs.add(r1);
+		regs.add(r2);
+		regs.add(r3);
+	}
+	
 
-
-	public Register r0 = new Register("r0");
-	public Register r1 = new Register("r1");
-	public Register r2 = new Register("r2");
-	public Register r3 = new Register("r3");
-
-	public Register ensure(String opr){ 
-		if(r0.getVar().equals(opr)) return r0;
-		if(r1.getVar().equals(opr)) return r1;
-		if(r2.getVar().equals(opr)) return r2;
-		if(r3.getVar().equals(opr)) return r3;
+	private int i=3;
+	public Register ensure(String opr, boolean d){ 
+		for(Register r : regs){
+			if(r.getVar().equals(opr) || r.toString().equals(opr)){
+				r.isDirty = d;
+				return r;
+			}
+		}
 		Register r = allocate(opr);
-		this.ilist.add("move "+opr+" "+r +" ;ensured "+opr+" is in "+r);
+		r.isDirty = d;
+		this.ilist.add("move "+r.getVar()+" "+r+" ;"+opr+" got "+r);
 		return r;
 	}
-	private int i=0;
-	public Register allocate(String opr){ 
-		if(r0.isFree) {
-			r0.setVar(opr);
-			return r0;
+	public Register free(Register reg){
+		if(reg.isDirty && !isNumeric(reg.getVar()) ){
+			this.ilist.add(";"+reg.getVar()+" lost "+reg+" and was dirty");
+			this.ilist.add("move "+reg+" "+reg.getVar());
 		}
-		if(r1.isFree){
-			r1.setVar(opr);
-			return r1;
-		}
-		if(r2.isFree){
-			r2.setVar(opr);
-			return r2;
-		}
-		if(r3.isFree){
-			r3.setVar(opr);
-			return r3;
-		}
-		Register r = chooseReg();
-		r.setVar(opr);
-		return r;
-	}
-	public Register chooseReg(){
-		//i is declared above allocate(..)
-		if(i == 0) return free(r0); 
-		if(i == 1) return free(r1); 
-		if(i == 2) return free(r2); 
-		return free(r3); 
-	}
-	public boolean isNumeric(String str){
-		  try  
-		  {  
-		    double d = Double.parseDouble(str);  
-		  }  
-		  catch(NumberFormatException nfe)  
-		  {  
-		    return false;  
-		  }  
-		  return true;  
-	}
-	public Register free(Register reg){ 
-		if(!isNumeric(reg.getVar())){ 
-			this.ilist.add("move "+reg+" "+reg.getVar()+" ;free "+reg.getVar()+" lost " +reg);//temporary
-		}
-		i = (i+1) % 4;//temporary
+		else {
+			this.ilist.add(";"+reg.getVar()+" lost "+reg+" because it wasn't dirty");
+		}		
+		reg.isFree = true;
 		return reg;
 	}
+	public Register allocate(String opr){
+		Register retReg = new Register(); 
+		for(Register r : regs){
+			if(r.isFree){
+				retReg = r;
+				break;
+			}
+		}
+		if(retReg.toString().length() < 1) {
+			retReg = free(chooseReg());
+		}
+		retReg.setVar(opr);
+		return retReg;
+	}
+	public Register chooseReg(){
+		i = (i+1)%4;
+		if(i==0)  return r0;
+		if(i==1)  return r1;
+		if(i==2)  return r2;
+		return r3;
+	}
+
 	public void buildIR(){
 		String[] split;
 		ListIterator<IRNode> itr = null;
@@ -136,7 +140,12 @@ public class InterRep extends LinkedList<Object>{
 			else if(split[i].startsWith("$T")){
 				split[i] = "$-"+(this.numLocVars+Integer.parseInt(split[i].substring(2)));//numLocVars
 				if( useAllocation){
-					split[i] = ensure(split[i]).toString();
+
+					Register r;
+					if(i == (split.length -1) ) r = ensure(split[i],true);
+					else r = ensure(split[i],false);
+					//split[i] = r.toString();
+
 				} else{
 					split[i] = split[i].replace("$-","r");
 				}
@@ -188,7 +197,7 @@ public class InterRep extends LinkedList<Object>{
 		else if(split[0].startsWith(";POP")){
 			if(split.length > 1){
 				if(useAllocation){
-					r = ensure(split[1]);
+					r = ensure(split[1],true);
 					this.ilist.add("pop "+r);
 					this.ilist.add("move "+r+ " " + r.getVar());
 				} else {
@@ -220,7 +229,7 @@ public class InterRep extends LinkedList<Object>{
 				||  (! isRegister(split[1]) && !isRegister(split[1]) )		
 			){
 				if(useAllocation){
-					r = ensure(split[1]);
+					r = ensure(split[1],false);
 					this.ilist.add("move "+r+" "+split[2]);
 				} else {
 					this.ilist.add("move "+split[1]+" r"+ri);
@@ -235,7 +244,7 @@ public class InterRep extends LinkedList<Object>{
 			|| split[0].startsWith(";DIV") 
 			){	
 			t = Character.toLowerCase(split[0].charAt(4));
-			if(t=='f') t = 'r';
+			if(t=='f' || t=='F') t = 'r';
 			split[0]=split[0].replace(";ADD", "add").substring(0,3); 
 			split[0]=split[0].replace(";SUB", "sub").substring(0,3);
 			split[0]=split[0].replace(";MUL", "mul").substring(0,3); 
@@ -244,8 +253,18 @@ public class InterRep extends LinkedList<Object>{
 			if(split[0].startsWith(";MU")) split[0] = "mul";
 			if(split[0].startsWith(";DI")) split[0] = "div";
 			if(useAllocation){
-				this.ilist.add("move "+split[1]+" "+ split[3]);
-				this.ilist.add(split[0]+t+" "+split[2]+" "+ split[3]);
+
+				r = ensure(split[1],false);
+				Register r2 = ensure(split[2],false);
+				Register r3 = ensure(split[3],true);
+				
+				this.ilist.add("move "+r+" "+ r3);
+				this.ilist.add(split[0]+t+" "+r2+" "+ r3);
+
+/*
+				this.ilist.add("move "+ split[1] + " " + ensure(split[3],false) );
+				this.ilist.add(split[0]+t+" "+split[2]+" "+ensure(split[3],true) );
+*/
 			}else {
 				this.ilist.add("move "+ split[1] + " " + split[3] );
 				this.ilist.add(split[0]+t+" "+split[2]+" "+split[3]);
@@ -274,7 +293,7 @@ public class InterRep extends LinkedList<Object>{
 			this.ilist.add("pop r1");
 			this.ilist.add("pop r0");
 		} else if(compChars.contains(split[0].substring(2))){
-			r = ensure (split[2]);
+			r = ensure (split[2],false);
 			if(split[0].startsWith(";I"))
 				this.ilist.add("cmpi "+split[1]+" "+r);
 			else

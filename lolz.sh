@@ -24,15 +24,16 @@ if [ -f "$inpath/$2.micro" ] > /dev/null 2>&1 ; then
 	java -jar compiler.jar "$inpath/$2.micro" > "theirout"
 	if [ $1 = "use" ] > /dev/null 2>&1 ; then
 		echo "using allocation"
-		./tiny $ofile   > "myres"
-		./tiny "theirout" > "theirres"
+		./tiny $ofile  | head -n -11  > "myres"
+		./tiny "theirout" | head -n -11 > "theirres"
 	else
 		echo "not using allocation"
-		./tinyR $ofile   > "myres"
-		./tinyR "$opath/$2.out" > "theirres"
+		./tinyR $ofile  | head -n -11  > "myres"
+		./tiny "theirout" | head -n -11 > "theirres"
+		#./tinyR "$opath/$2.out" | head -n -11 > "theirres"
 	fi
 	echo "theirs <-> mine"
-	diff -b -B -y "theirres" "myres" 
+	diff -b -B -y "theirres" "myres"  
 	exit 0
 else
 	echo "$2.micro not found...performing full test"

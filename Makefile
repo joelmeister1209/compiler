@@ -4,6 +4,7 @@ ANTLR_SCRIPT := Micro.g4
 all: group compiler
 
 tiny:
+	rm -f tiny
 	g++ -fno-stack-protector -o tiny tiny4regs.C
 
 #makes the tiny exec from the file posted

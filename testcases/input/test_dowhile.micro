@@ -14,10 +14,11 @@ BEGIN
 		approx := num;	
 	
           DO
+			WRITE(approx,space);
 			newapprox := 0.5*(approx + num/approx);
+			WRITE(newapprox,space, i,eol);
 			approx := newapprox;
 			i := i-1;
-			WRITE(i,space,newapprox,space,approx,eol);
 		WHILE (i != 0);
 
 		WRITE(approx);
